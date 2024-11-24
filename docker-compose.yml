@@ -1,0 +1,100 @@
+services:
+  api-gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - 3000:3000
+    # depends_on:
+    #   - auth
+    env_file:
+      - ./gateway/.env
+    develop:
+      watch:
+        - path: ./gateway/
+          target: /app/
+          action: sync
+        - path: ./gateway/package.json
+          action: rebuild
+
+  # auth:
+  #   build:
+  #     context: ./auth
+  #     dockerfile: Dockerfile
+  #   container_name: auth
+  #   depends_on:
+  #     - mongo-database-auth
+  #   env_file:
+  #     - ./auth/.env
+  #   develop:
+  #     watch:
+  #       - action: sync
+  #         path: ./auth/
+  #         target: /app/
+  #       - action: rebuild
+  #         path: ./auth/package.json
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: client
+    depends_on:
+      - api-gateway
+    ports:
+      - "5173:5173"
+    environment:
+      # - VITE_API_BASE_URL=http://api-gateway:3000/api
+      - VITE_API_BASE_URL=http://localhost:3000/api
+    develop:
+      watch:
+        - action: sync
+          path: ./client/
+          target: /app/
+        - action: rebuild
+          path: ./client/package.json
+
+  # products:
+  #   build:
+  #     context: ./products
+  #     dockerfile: Dockerfile
+  #   container_name: products
+  #   depends_on:
+  #     - mongo-database-products
+  #   env_file:
+  #     - ./products/.env
+  #   develop:
+  #     watch:
+  #       - action: sync
+  #         path: ./products/
+  #         target: /app/
+  #       - action: rebuild
+  #         path: ./products/package.json
+
+  # mongo-database-auth:
+  #   image: mongo:latest
+  #   container_name: mongo-database-auth
+  #   restart: always
+  #   ports:
+  #     - 27018:27017
+  #   volumes:
+  #     - mongo-auth-volume:/data/db
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: root
+  #     MONGO_INITDB_ROOT_PASSWORD: example
+
+  # mongo-database-products:
+  #   image: mongo:latest
+  #   container_name: mongo-database-products
+  #   restart: always
+  #   ports:
+  #     - 27019:27017
+  #   volumes:
+  #     - mongo-products-volume:/data/db
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: root
+  #     MONGO_INITDB_ROOT_PASSWORD: example
+# volumes:
+#   mongo-auth-volume:
+#   mongo-products-volume:
