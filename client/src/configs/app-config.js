@@ -61,6 +61,15 @@ const appConfig = {
           },
         },
       },
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            "&:focus": {
+              outline: "none",
+            },
+          },
+        },
+      },
     },
     typography: {
       fontFamily: "Roboto, Arial, sans-serif",
