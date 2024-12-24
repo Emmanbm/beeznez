@@ -1,21 +1,17 @@
 const express = require("express");
-cors = require("cors");
 const app = express();
-const PORT = 3000;
-const users = [
-  { id: 1, name: "John", email: "john@example.com" },
-  { id: 2, name: "Jane", email: "jane@example.com" },
-  { id: 3, name: "Bob", email: "bob@example.com" },
-  { id: 4, name: "Mary", email: "mary@example.com" },
-  { id: 5, name: "David", email: "david@example.com" },
-];
+const cors = require("cors");
+const dotenv = require("dotenv");
+dotenv.config();
+const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
-app.use(cors());
-app.get("/api/", (req, res) => {
-  res.status(200).json(users);
-});
+const proxy = require("express-http-proxy");
+// const adminMiddleware = require("./app/middlewares/adminMiddlewares");
 
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-});
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use("/api/auth", proxy("http://auth:8081"));
+// app.use("/api/companies", proxy("http://companies:8082"));
+
+app.listen(PORT, () =>
+  console.log(`Server running at http://localhost:${PORT}`)
+);
