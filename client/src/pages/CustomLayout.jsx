@@ -1,12 +1,15 @@
 import { Box } from "@mui/material";
 import React from "react";
 import Topbar from "../components/Topbar";
-import Sidebar from "../components/Sidebar/Sidebar";
 import { Outlet } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useTheme } from "@emotion/react";
 import { useMediaQuery } from "@mui/material";
 import Footer from "../components/Footer";
+import Settings from "../components/SettingsComponent/Settings";
+import UpdateUser from "../components/UpdateUser/UpdateUser";
+import Sidebar from "../components/Sidebar/Sidebar";
+import Notifications from "../components/NotificationsComponent/Notifications";
 
 const CustomLayout = () => {
   const sidebarIsOpen = useSelector((store) => store.app?.openSidebar);
@@ -24,6 +27,9 @@ const CustomLayout = () => {
       <Topbar />
       <Box sx={{ display: "flex", flexGrow: 1 }}>
         <Sidebar />
+        <Notifications />
+        <Settings />
+        <UpdateUser />
         <Box
           component='main'
           sx={{
@@ -31,6 +37,8 @@ const CustomLayout = () => {
             p: 3,
             mt: 8,
             ml: isMobile ? 0 : sidebarIsOpen ? "15vw" : 0,
+            minWidth: sidebarIsOpen ? "calc(100% - 15vw)" : "100%",
+            overflow: "auto",
             transition: "margin-left .4s ease-in-out",
           }}>
           <Outlet />
