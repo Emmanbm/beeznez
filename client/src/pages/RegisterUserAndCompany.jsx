@@ -10,16 +10,20 @@ import {
 } from "@mui/material";
 import FormUserContent from "../components/SignUp/User/FormUserContent";
 import FormCompanyContent from "../components/SignUp/Company/FormCompanyContent";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import useServerApi from "../hooks/useServerApi";
 import LoadingButton from "../components/LoadingButton";
 import { useNavigate } from "react-router-dom";
+import ModalError from "../components/ModalError";
+import { login } from "../redux/user";
 
 const steps = ["Créer un compte utilisateur", "Créer un compte entreprise"];
 const buttonTitle = "Continuer";
 
 const RegisterUserAndCompany = () => {
   const [activeStep, setActiveStep] = useState(0);
+  const [openModal, setOpenModal] = useState(false);
+  const dispatch = useDispatch();
   const formData = useSelector((store) => store.tempData?.formData);
   const [{ loading, error }, refresh] = useServerApi(
     { url: "auth/register/company/and/manager", method: "POST" },
@@ -41,8 +45,14 @@ const RegisterUserAndCompany = () => {
 
       const response = await refresh({ data: formData });
       console.log(response);
-      navigateTo("/login");
+      const { user } = response.data;
+      if (user) {
+        dispatch(login(user));
+        navigateTo("/auth/dashboard");
+      }
+      // navigateTo("/login");
     } catch (error) {
+      setOpenModal(true);
       console.log(error);
     }
   };
@@ -57,6 +67,7 @@ const RegisterUserAndCompany = () => {
       gap={2}
       alignItems='center'
       justifyContent={activeStep !== steps.length ? "space-between" : "center"}>
+      <ModalError open={openModal} setOpen={setOpenModal} error={error} />
       <Stepper activeStep={activeStep} alternativeLabel sx={{ width: "100%" }}>
         {steps.map((label) => (
           <Step key={label}>

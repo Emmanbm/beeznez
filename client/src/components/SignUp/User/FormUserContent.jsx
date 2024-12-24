@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   Card,
   CardActions,
   CardContent,
@@ -9,18 +8,18 @@ import {
   Typography,
 } from "@mui/material";
 import React from "react";
-import CustomTextField from "../../CustomTextField";
 // import PasswordField from "../../PasswordField";
 import FormAlert from "../../FormAlert";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, Navigate } from "react-router-dom";
-import { updateFormData, updateUserData } from "../../../redux/tempData";
+import { Link, useNavigate } from "react-router-dom";
+import { updateFormData } from "../../../redux/tempData";
 import useServerApi from "../../../hooks/useServerApi";
 import LoadingButton from "../../LoadingButton";
 import TextField from "../../FormFields/TextField";
 import EmailField from "../../FormFields/EmailField";
 import PasswordField from "../../FormFields/PasswordField";
+import { login } from "../../../redux/user";
 
 const FormUserContent = ({
   registerUserAndCompany = false,
@@ -28,12 +27,13 @@ const FormUserContent = ({
   width = "100vw",
   height = "100vh",
   handleNext,
+  role = "freelance",
 }) => {
   const isAuthenticated = useSelector((store) => store.user?.isAuthenticated);
   const dispatch = useDispatch();
-
+  const navigateTo = useNavigate();
   const [{ loading, error }, refresh] = useServerApi(
-    { url: "/register", method: "POST" },
+    { url: "/auth/register", method: "POST" },
     { manual: true }
   );
 
@@ -46,7 +46,7 @@ const FormUserContent = ({
   const password = watch("password", "");
 
   const onSubmit = async (data) => {
-    console.log(data);
+    // console.log(data);
     try {
       if (registerUserAndCompany) {
         dispatch(updateFormData({ userData: data }));
@@ -54,13 +54,19 @@ const FormUserContent = ({
           handleNext();
         }
       } else {
-        const response = await refresh({ data });
+        const response = await refresh({ data: { ...data, role } });
+        console.log(response);
+        const { user } = response.data;
+        if (user) {
+          dispatch(login(user));
+          navigateTo("/auth/dashboard");
+        }
       }
     } catch (error) {
       console.log(error);
     }
   };
-  if (isAuthenticated) return <Navigate to='/auth/dashboard' replace={true} />;
+  // if (isAuthenticated) return <Navigate to='/auth/dashboard' replace={true} />;
   return (
     <Box
       component='form'
@@ -98,7 +104,8 @@ const FormUserContent = ({
             label='Prénom'
             placeholder='Votre prénom'
             register={register}
-            errors={errors}
+            apiErrors={error?.response?.data?.errors}
+            formErrors={errors}
             required
           />
           <TextField
@@ -106,14 +113,21 @@ const FormUserContent = ({
             label='Nom'
             placeholder='Votre nom'
             register={register}
-            errors={errors}
+            apiErrors={error?.response?.data?.errors}
+            formErrors={errors}
             required
           />
-          <EmailField register={register} errors={errors} required />
+          <EmailField
+            register={register}
+            formErrors={errors}
+            apiErrors={error?.response?.data?.errors}
+            required
+          />
           <PasswordField
             displayStrength
             fullWidth
             errors={errors}
+            apiErrors={error?.response?.data?.errors}
             required
             label='Mot de passe'
             variant='filled'
@@ -135,7 +149,7 @@ const FormUserContent = ({
             id='confirm-password'
             fullWidth
             required
-            errors={errors}
+            formErrors={errors}
             label='Confirmer le mot de passe'
             variant='filled'
             placeholder='Confirmer le mot de passe'

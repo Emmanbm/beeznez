@@ -51,7 +51,7 @@ const FormCompanyContent = ({
       console.log(error);
     }
   };
-  if (isAuthenticated) return <Navigate to='/auth/dashboard' replace={true} />;
+  // if (isAuthenticated) return <Navigate to='/auth/dashboard' replace={true} />;
   return (
     <Box
       component='form'
