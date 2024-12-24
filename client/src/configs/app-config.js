@@ -17,7 +17,7 @@ const appConfig = {
       palette: {
         mode: "light",
         primary: {
-          main: "#4CAF50",
+          main: "#0056D2",
         },
         background: {
           default: "#F5F5F5",
@@ -28,7 +28,7 @@ const appConfig = {
           secondary: "#757575",
         },
         action: {
-          hover: "#4CAF50",
+          hover: "#0056D2",
         },
       },
     },
@@ -72,11 +72,11 @@ const appConfig = {
       },
     },
     typography: {
-      fontFamily: "Roboto, Arial, sans-serif",
+      // fontFamily: "Roboto, Arial, sans-serif",
+      // fontFamily: "OpenSans",
+      fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
     },
   },
 };
-
-appConfig;
 
 export default appConfig;
