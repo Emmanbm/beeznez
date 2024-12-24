@@ -1,17 +1,24 @@
 import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
 import { setLogoutTimer } from "../utils/setLogoutTimer";
+import { getExpirationTime } from "../utils/getExpirationTime";
 
-const ProtectedRoute = ({ children }) => {
-  const isAuthenticated = useSelector((store) => store.user?.isAuthenticated);
-  const dispatch = useDispatch();
+const ProtectedRoute = ({ allowedRoles, children }) => {
+  const { isAuthenticated, role } = useSelector((store) => store.user || {});
   useEffect(() => {
-    if (isAuthenticated) setLogoutTimer(dispatch, 10 * 1000);
-    console.log(typeof children);
+    if (isAuthenticated) setLogoutTimer(getExpirationTime({ h: 24 }));
   }, [isAuthenticated]);
 
-  return isAuthenticated ? children : <Navigate to='/auth/login' replace />;
+  if (!isAuthenticated) {
+    return <Navigate to='/login' replace />;
+  }
+
+  if (allowedRoles && !allowedRoles.includes(role)) {
+    return <Navigate to='/dashboard' replace />;
+  }
+
+  return children;
 };
 
 export default ProtectedRoute;

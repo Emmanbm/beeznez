@@ -6,7 +6,7 @@ import { otherPages, pagesWithLayout } from "./routes";
 const router = createBrowserRouter(
   [
     {
-      path: "/",
+      path: "/auth/",
       element: React.createElement(CustomLayout),
       children: pagesWithLayout.map(({ element, props, ...otherProps }) => ({
         element: React.createElement(element, props),
