@@ -3,9 +3,8 @@ import { createSlice } from "@reduxjs/toolkit";
 const app = createSlice({
   name: "app",
   initialState: {
-    mode: "dark",
+    mode: "light",
     openSidebar: true,
-    openNotifications: false,
   },
   reducers: {
     toggleMode: (state) => {
@@ -13,9 +12,6 @@ const app = createSlice({
     },
     toggleSidebar: (state) => {
       state.openSidebar = !state.openSidebar;
-    },
-    toggleNotifications: (state) => {
-      state.openNotifications = !state.openNotifications;
     },
   },
 });
