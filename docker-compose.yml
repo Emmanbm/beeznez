@@ -6,8 +6,9 @@ services:
     container_name: api-gateway
     ports:
       - 3000:3000
-    # depends_on:
-    #   - auth
+    depends_on:
+      - auth
+      # - companies
     env_file:
       - ./gateway/.env
     develop:
@@ -18,22 +19,39 @@ services:
         - path: ./gateway/package.json
           action: rebuild
 
-  # auth:
+  auth:
+    build:
+      context: ./auth
+      dockerfile: Dockerfile
+    container_name: auth
+    depends_on:
+      - mongo-database-auth
+    env_file:
+      - ./auth/.env
+    develop:
+      watch:
+        - action: sync
+          path: ./auth/
+          target: /app/
+        - action: rebuild
+          path: ./auth/package.json
+
+  # companies:
   #   build:
-  #     context: ./auth
+  #     context: ./companies
   #     dockerfile: Dockerfile
-  #   container_name: auth
+  #   container_name: companies
   #   depends_on:
-  #     - mongo-database-auth
+  #     - mongo-database-companies
   #   env_file:
-  #     - ./auth/.env
+  #     - ./companies/.env
   #   develop:
   #     watch:
   #       - action: sync
-  #         path: ./auth/
+  #         path: ./companies/
   #         target: /app/
   #       - action: rebuild
-  #         path: ./auth/package.json
+  #         path: ./companies/package.json
 
   client:
     build:
@@ -44,9 +62,8 @@ services:
       - api-gateway
     ports:
       - "5173:5173"
-    environment:
-      # - VITE_API_BASE_URL=http://api-gateway:3000/api
-      - VITE_API_BASE_URL=http://localhost:3000/api
+    env_file:
+      - ./client/.env
     develop:
       watch:
         - action: sync
@@ -72,14 +89,26 @@ services:
   #       - action: rebuild
   #         path: ./products/package.json
 
-  # mongo-database-auth:
+  mongo-database-auth:
+    image: mongo:latest
+    container_name: mongo-database-auth
+    restart: always
+    ports:
+      - 27018:27017
+    # volumes:
+    #   - mongo-auth-volume:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+
+  # mongo-database-companies:
   #   image: mongo:latest
-  #   container_name: mongo-database-auth
+  #   container_name: mongo-database-companies
   #   restart: always
   #   ports:
-  #     - 27018:27017
-  #   volumes:
-  #     - mongo-auth-volume:/data/db
+  #     - 27019:27017
+  #   # volumes:
+  #   #   - mongo-companies-volume:/data/db
   #   environment:
   #     MONGO_INITDB_ROOT_USERNAME: root
   #     MONGO_INITDB_ROOT_PASSWORD: example
@@ -95,6 +124,6 @@ services:
   #   environment:
   #     MONGO_INITDB_ROOT_USERNAME: root
   #     MONGO_INITDB_ROOT_PASSWORD: example
-# volumes:
-#   mongo-auth-volume:
+  # volumes:
+  # mongo-auth-volume:
 #   mongo-products-volume:
