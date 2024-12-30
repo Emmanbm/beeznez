@@ -7,22 +7,28 @@ const { checkPassword } = require("../utils/passwordUtils");
 const { generateToken, decodeToken } = require("../utils/tokenUtils");
 const { getInvitationCode } = require("../utils/getInvitationCode");
 const sendConfirmationEmail = require("../utils/sendConfirmationEmail");
-const { getAllUsers, getEmployees } = require("../utils/getUsers");
+const {
+  getUsersFunction,
+  createUserFunction,
+} = require("../utils/utilsControllers/usersUtils");
+const {
+  getCompaniesFunction,
+} = require("../utils/utilsControllers/companiesUtils");
+const {
+  getNotificationsFunction,
+} = require("../utils/utilsControllers/notificationsUtils");
+const { getTasksFunction } = require("../utils/utilsControllers/tasksUtils");
+const {
+  getProjectsFunction,
+} = require("../utils/utilsControllers/projectsUtils");
 
 const MAX_AGE = 24 * 60 * 60 * 1000; // 24 heures
 
 const getUsers = async (req, res) => {
   try {
     const { role, companyId } = req.query;
-    if (role === "admin") {
-      const users = await getAllUsers();
-      return res.status(200).json(users);
-    }
-    if (role === "manager") {
-      const users = await getEmployees(companyId);
-      return res.status(200).json(users);
-    }
-    return res.status(200).json([]);
+    const users = await getUsersFunction({ role, companyId });
+    return res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -40,19 +46,8 @@ const login = async (req, res) => {
     if (!match)
       return res.status(401).json({ message: "Mot de passe incorrect" });
 
-    const {
-      _id: id,
-      firstName,
-      lastName,
-      email,
-      role,
-      profilePicture,
-      companyId,
-    } = user;
-
-    const notifications = await Notification.find({ userId: id }).sort({
-      createdAt: -1,
-    });
+    const { id, firstName, lastName, email, role, profilePicture, companyId } =
+      user;
 
     const token = generateToken({
       id,
@@ -68,6 +63,16 @@ const login = async (req, res) => {
       sameSite: "Strict",
       maxAge: MAX_AGE,
     });
+
+    const [users, companies, notifications, tasks, projects] =
+      await Promise.all([
+        getUsersFunction({ role, companyId }),
+        getCompaniesFunction(),
+        getNotificationsFunction({ id }),
+        getTasksFunction({ id }),
+        getProjectsFunction({ companyId, userId: id, role }),
+      ]);
+
     res.status(200).json({
       user: {
         id,
@@ -78,6 +83,10 @@ const login = async (req, res) => {
         profilePicture,
         companyId,
         notifications,
+        users,
+        companies,
+        tasks,
+        projects,
       },
     });
   } catch (error) {
@@ -97,17 +106,32 @@ const getUserInfoFromToken = async (req, res) => {
 const registerUser = async (req, res) => {
   try {
     const { firstName, lastName, email, password, role } = req.body;
-    const user = new User({
+    let companyId = null;
+    const userId = new mongoose.Types.ObjectId();
+
+    if (role === "admin") {
+      const beezNezCompany = await Company.findOne({ name: "BeeZnez" });
+      if (!beezNezCompany) {
+        return res.status(400).json({
+          error:
+            "Impossible de créer un administrateur BeeZnez car le compte entreprise BeeZnez n'a pas été créé.",
+        });
+      }
+      companyId = beezNezCompany._id;
+    }
+
+    const savedUser = await createUserFunction({
+      _id: userId,
       firstName,
       lastName,
       email,
       password,
       role: role || "freelance",
+      companyId,
     });
 
-    const savedUser = await user.save();
     const token = generateToken({
-      id: user._id,
+      id: userId,
       firstName,
       lastName,
       email,
@@ -183,6 +207,7 @@ const registerCompanyManager = async (req, res) => {
 const registerCompanyAndManager = async (req, res) => {
   try {
     const { userData, companyData } = req.body;
+    console.log({ userData, companyData });
 
     const companyExists = await Company.findOne({ email: companyData.email });
     const userExists = await User.findOne({ email: userData.email });

@@ -2,6 +2,7 @@ const express = require("express");
 require("dotenv").config();
 
 const authRouter = require("./routes/authRoutes");
+const companyRouter = require("./routes/companyRoutes");
 const notificationRouter = require("./routes/notificationRoutes");
 const taskRouter = require("./routes/taskRoutes");
 const projectRouter = require("./routes/projectRoutes");
@@ -18,10 +19,18 @@ connectDB();
 app.use(express.json());
 app.use(cookieParser());
 app.use("/", authRouter);
-app.use("/", taskRouter);
-app.use("/", projectRouter);
+app.use("/", companyRouter);
+app.use("/", verifyToken, taskRouter);
+app.use("/", verifyToken, projectRouter);
 app.use("/", verifyToken, notificationRouter);
+app.use((req, res) => {
+  res.status(404).json({
+    message: `La page '${req.url}' n'existe pas, veuillez vérifier l'URL`,
+  });
+});
 
-app.listen(PORT, () => {
+server = app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
+
+module.exports = server;

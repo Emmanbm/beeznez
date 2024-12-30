@@ -20,6 +20,9 @@ const getAdminStats = async (userId) => {
     ).length;
     const companies = await Company.find();
     const totalNbrCompanies = companies.length;
+    const tasks = await Task.find({ userId });
+    const totalTasks = tasks.length;
+    const completedTasks = tasks.filter((task) => task.completed).length;
     const stats = [
       {
         title: "Nombre d'utilisateurs",
@@ -48,6 +51,14 @@ const getAdminStats = async (userId) => {
       {
         title: "Nombre d'entreprises",
         value: totalNbrCompanies,
+      },
+      {
+        title: "Nombre de tâches",
+        value: totalTasks,
+      },
+      {
+        title: "Tâches terminées",
+        value: completedTasks,
       },
     ];
     if (nextHoliday) {
@@ -82,6 +93,9 @@ const getManagerStats = async (userId, companyId) => {
     const projectsCompleted = projects.filter(
       (project) => project.status === "completed"
     );
+    const tasks = await Task.find({ userId });
+    const totalTasks = tasks.length;
+    const completedTasks = tasks.filter((task) => task.completed).length;
     const stats = [
       {
         title: "Nombre d'employés",
@@ -102,6 +116,14 @@ const getManagerStats = async (userId, companyId) => {
       {
         title: "Projets finis",
         value: projectsCompleted.length,
+      },
+      {
+        title: "Nombre de tâches",
+        value: totalTasks,
+      },
+      {
+        title: "Tâches terminées",
+        value: completedTasks,
       },
     ];
     if (nextHoliday) {

@@ -10,6 +10,16 @@ const tempData = createSlice({
       userData: {},
       companyData: {},
     },
+    modals: {
+      projectDetails: {
+        open: false,
+        data: null,
+      },
+      formProject: {
+        open: false,
+        data: null,
+      },
+    },
   },
   reducers: {
     toggleNotifications: (state) => {
@@ -30,6 +40,15 @@ const tempData = createSlice({
     updateCompanyData: (state, action) => {
       state.formData.companyData = action.payload.companyData;
     },
+    openModal: (state, action) => {
+      state.modals[action.payload.modal] = {
+        open: true,
+        data: action.payload.data,
+      };
+    },
+    closeModal: (state, action) => {
+      state.modals[action.payload.modal] = { open: false, data: null };
+    },
   },
 });
 
@@ -40,6 +59,8 @@ export const {
   updateCompanyData,
   updateUserData,
   updateFormData,
+  openModal,
+  closeModal,
 } = tempData.actions;
 
 export default tempData.reducer;

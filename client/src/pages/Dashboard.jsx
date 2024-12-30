@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { Box, Grid, Typography } from "@mui/material";
 import { useSelector } from "react-redux";
 import DashboardCard from "../components/Dashboard/DashboardCard";
-import { getCards } from "../components/Dashboard/cards";
 import useServerApi from "../hooks/useServerApi";
 
 const Dashboard = () => {

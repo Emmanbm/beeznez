@@ -18,9 +18,8 @@ import Topbar from "../components/Topbar";
 import LoadingButton from "../components/LoadingButton";
 import LoginContent from "../components/Login/LoginContent";
 import Footer from "../components/Footer";
-// import { isExpired, decodeToken } from "react-jwt";
 
-const message = "There was a connection problem, try again";
+const message = "Une erreur s’est produite, veuillez réessayer plus tard!";
 
 const Login = () => {
   const isAuthenticated = useSelector((store) => store.user?.isAuthenticated);

@@ -63,10 +63,24 @@ const userSlice = createSlice({
       state.tasks = state.tasks.map((task) =>
         task.id === updatedTask.id ? { ...updatedTask } : { ...task }
       );
+      state.projects = state.projects.map((project) => {
+        return {
+          ...project,
+          tasks: project.tasks.map((task) =>
+            task.id === updatedTask.id ? { ...updatedTask } : { ...task }
+          ),
+        };
+      });
     },
     deleteTask: (state, action) => {
       const { deletedTask } = action.payload;
       state.tasks = state.tasks.filter((task) => task.id !== deletedTask.id);
+      state.projects = state.projects.map((project) => {
+        return {
+          ...project,
+          tasks: project.tasks.filter((task) => task.id !== deletedTask.id),
+        };
+      });
     },
     getProjects: (state, action) => {
       state.projects = action.payload.projects;

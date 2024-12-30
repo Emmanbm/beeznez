@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  api-gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+      target: prod
+    container_name: api-gateway
+    ports:
+      - 3000:3000
+    depends_on:
+      - auth
+    env_file:
+      - ./gateway/.env
+    restart: unless-stopped
+
+  auth:
+    build:
+      context: ./auth
+      dockerfile: Dockerfile
+      target: prod
+    container_name: auth
+    env_file:
+      - ./auth/.env
+    restart: unless-stopped
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      target: prod
+    container_name: client
+    depends_on:
+      - api-gateway
+    ports:
+      - 80:5173
+    env_file:
+      - ./client/.env
+    restart: unless-stopped

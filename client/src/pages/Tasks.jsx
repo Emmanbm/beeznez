@@ -33,13 +33,16 @@ const Tasks = () => {
       }
     }
   }, [userId]);
-  if (loading) return <Typography>Chargement...</Typography>;
   return (
     <Container maxWidth='lg'>
       <Typography variant='h4' gutterBottom>
         Liste des tâches
       </Typography>
-      <TodoList tasks={tasks} />
+      {loading ? (
+        <Typography>Chargement...</Typography>
+      ) : (
+        <TodoList tasks={tasks} />
+      )}
     </Container>
   );
 };

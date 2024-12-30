@@ -1,4 +1,10 @@
-/*
+export interface User {
+  id: string;
+  role: "admin" | "manager" | "employee" | "freelance";
+  [key: string]: any;
+}
+
+/**
  * Fonction qui renvoie un tableau d'utilisateurs à affecter une tâche selon le rôle de l'utilisateur courant
  *
  * @param users - Tableau d'utilisateurs
@@ -7,12 +13,6 @@
  *
  * @returns - Tableau d'utilisateurs à affecter la tâche
  */
-
-export interface User {
-  id: string;
-  role: "admin" | "manager" | "employee" | "freelance";
-  [key: string]: any;
-}
 
 export const getUsersToAssingTask = (
   users: User[],

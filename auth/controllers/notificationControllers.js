@@ -1,10 +1,18 @@
 const Notification = require("../models/Notification");
+const {
+  createNotificationFunction,
+} = require("../utils/utilsControllers/notificationsUtils");
 
 const createNotification = async (req, res) => {
   try {
     const { userId, title, message } = req.body;
-    const notification = new Notification({ userId, message, title });
-    const savedNotification = await notification.save();
+    const savedNotification = await createNotificationFunction({
+      userId,
+      title,
+      message,
+    });
+    // const notification = new Notification({ userId, message, title });
+    // const savedNotification = await notification.save();
     res.status(201).json(savedNotification);
   } catch (error) {
     const errors = Object.values(error.errors).map(({ path, message }) => ({

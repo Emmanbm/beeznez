@@ -1,15 +1,18 @@
+version: "3.8"
+
 services:
   api-gateway:
     build:
       context: ./gateway
       dockerfile: Dockerfile
+      target: dev
     container_name: api-gateway
     ports:
       - 3000:3000
     depends_on:
       - auth
     env_file:
-      - ./gateway/.env
+      - ./gateway/.env.dev
     develop:
       watch:
         - path: ./gateway/
@@ -22,11 +25,12 @@ services:
     build:
       context: ./auth
       dockerfile: Dockerfile
+      target: dev
     container_name: auth
     depends_on:
       - mongo-database-auth
     env_file:
-      - ./auth/.env
+      - ./auth/.env.dev
     develop:
       watch:
         - action: sync
@@ -41,8 +45,8 @@ services:
     restart: always
     ports:
       - 27018:27017
-    # volumes:
-    #   - mongo-auth-volume:/data/db
+    volumes:
+      - mongo-auth-volume:/data/db
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
@@ -51,13 +55,14 @@ services:
     build:
       context: ./client
       dockerfile: Dockerfile
+      target: dev
     container_name: client
     depends_on:
       - api-gateway
     ports:
       - "5173:5173"
     env_file:
-      - ./client/.env
+      - ./client/.env.dev
     develop:
       watch:
         - action: sync
@@ -65,3 +70,5 @@ services:
           target: /app/
         - action: rebuild
           path: ./client/package.json
+volumes:
+  mongo-auth-volume:

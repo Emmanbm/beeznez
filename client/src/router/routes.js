@@ -18,7 +18,7 @@ import Messages from "../pages/Messages";
 import Leaves from "../pages/manager/Leaves";
 import Tasks from "../pages/Tasks";
 import JoinACompany from "../pages/employees/JoinACompany";
-import Projects from "../pages/manager/Projects";
+import Projects from "../pages/Projects";
 import SignUp from "../pages/SignUp";
 import Blog from "../pages/Blog";
 import NotFound from "../pages/NotFound";

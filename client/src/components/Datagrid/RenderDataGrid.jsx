@@ -17,11 +17,10 @@ const RenderDataGrid = ({ loading, rows, columns }) => {
   }, []);
   return (
     <Box
-      style={{
-        height: "100%",
-        minWidth: "100%",
-        width: 1440,
-      }}
+      height='100%'
+      minWidth='100%'
+      width={1000}
+      overflow='auto'
       sx={{
         "& .HeaderDataGrid": {
           bgcolor: (theme) => alpha(theme.palette.primary.main, 0.2),

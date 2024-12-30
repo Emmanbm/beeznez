@@ -8,13 +8,11 @@ import tempData from "./tempData";
 const userPersistConfig = {
   key: "__BEEZNEZ_USER__",
   storage,
-  // transforms: [expireUser],
 };
 
 const appPersistConfig = {
   key: "__BEEZNEZ_APP__",
   storage,
-  // transforms: [expireApp],
 };
 
 const rootReducer = combineReducers({
@@ -31,31 +29,6 @@ const store = configureStore({
         ignoredActions: ["persist/PERSIST", "persist/REHYDRATE"],
       },
     }),
-  // .concat((api) => (next) => (action) => {
-  //   const state = api.getState();
-
-  //   const userElapsedTime = state.user?.elapsedTime;
-  //   const userExpirationTime = getExpirationTime({ s: 6 });
-  //   const currentTime = Date.now();
-
-  //   if (
-  //     userElapsedTime &&
-  //     currentTime - userElapsedTime > userExpirationTime
-  //   ) {
-  //     console.log(
-  //       currentTime,
-  //       userElapsedTime,
-  //       userExpirationTime,
-  //       currentTime - userElapsedTime
-  //     );
-  //     console.log(action);
-  //     action.store = {
-  //       ...state,
-  //       user: userInitialState,
-  //     };
-  //   }
-  //   next(action);
-  // }),
 });
 
 export const persistor = persistStore(store);

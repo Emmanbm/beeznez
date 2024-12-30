@@ -9,6 +9,7 @@ const CustomTextField = ({
   required = true,
   fullWidth = true,
   variant = "filled",
+  ...otherProps
 }) => {
   return (
     <TextField
@@ -19,6 +20,7 @@ const CustomTextField = ({
       fullWidth={fullWidth}
       required={required}
       {...register(name, { required })}
+      {...otherProps}
     />
   );
 };

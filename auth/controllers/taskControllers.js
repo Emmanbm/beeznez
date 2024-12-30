@@ -1,6 +1,6 @@
 const Task = require("../models/Task");
 const getErrorMessages = require("../utils/getErrorMessages");
-const createTaskFunction = require("../utils/createTaskFunction");
+const { createTaskFunction } = require("../utils/utilsControllers/tasksUtils");
 
 const createTask = async (req, res) => {
   try {
@@ -12,7 +12,7 @@ const createTask = async (req, res) => {
       priority,
       userId,
     });
-    res.status(201).json(newTask);
+    res.status(201).json({ task: newTask });
   } catch (error) {
     const errors = getErrorMessages(error);
     res.status(400).json({ errors });
@@ -43,7 +43,7 @@ const updateTask = async (req, res) => {
       { name, description, dueDate, priority, completed, userId },
       { new: true }
     );
-    res.status(200).json(updatedTask);
+    res.status(200).json({ task: updatedTask });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
