@@ -1,33 +1,86 @@
+const { default: mongoose } = require("mongoose");
 const Company = require("../models/Company");
+const Payment = require("../models/Payment");
 const Project = require("../models/Project");
 const Task = require("../models/Task");
 const User = require("../models/User");
 
+const getPaymentsAggregate = (userId) => {
+  const agg = [
+    {
+      $facet: {
+        // Somme des paiements effectués
+        paymentsMade: [
+          {
+            $match: {
+              payerId: new mongoose.Types.ObjectId(userId),
+              status: "success",
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              totalMade: { $sum: "$amount" },
+            },
+          },
+        ],
+        // Somme des paiements reçus
+        paymentsReceived: [
+          {
+            $match: {
+              recipientId: new mongoose.Types.ObjectId(userId),
+              status: "success",
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              totalReceived: { $sum: "$amount" },
+            },
+          },
+        ],
+      },
+    },
+    {
+      $project: {
+        totalMade: { $arrayElemAt: ["$paymentsMade.totalMade", 0] },
+        totalReceived: { $arrayElemAt: ["$paymentsReceived.totalReceived", 0] },
+      },
+    },
+  ];
+  // console.log(JSON.stringify(agg, null, 2));
+  return agg;
+};
+
+const getPendingPaymentsAggregate = (userId) => {
+  return {
+    payerId: new mongoose.Types.ObjectId(userId),
+    status: "pending",
+  };
+};
+
 const getAdminStats = async (userId) => {
   try {
-    const users = await User.find();
-    const adminUser = await User.findById(userId);
+    const [users, adminUser, companies, tasks, payments, pendingPaymentsCount] =
+      await Promise.all([
+        User.find(),
+        User.findById(userId),
+        Company.find(),
+        Task.find({ userId }),
+        Payment.aggregate(getPaymentsAggregate(userId)),
+        Payment.countDocuments(getPendingPaymentsAggregate(userId)),
+      ]);
+
     const nextHoliday = adminUser.nextHoliday;
-    const totalNbrUsers = users.length;
     const activeUsers = users.filter((user) => user.isActive).length;
     const adminUsers = users.filter((user) => user.role === "admin").length;
-    const managerUsers = users.filter((user) => user.role === "manager").length;
-    const employeeUsers = users.filter(
-      (user) => user.role === "employee"
-    ).length;
-    const freelanceUsers = users.filter(
-      (user) => user.role === "freelance"
-    ).length;
-    const companies = await Company.find();
     const totalNbrCompanies = companies.length;
-    const tasks = await Task.find({ userId });
     const totalTasks = tasks.length;
     const completedTasks = tasks.filter((task) => task.completed).length;
+
+    const { totalMade = 0, totalReceived = 0 } = payments[0];
+
     const stats = [
-      {
-        title: "Nombre d'utilisateurs",
-        value: totalNbrUsers,
-      },
       {
         title: "Utilisateurs actifs",
         value: activeUsers,
@@ -37,28 +90,28 @@ const getAdminStats = async (userId) => {
         value: adminUsers,
       },
       {
-        title: "Managers",
-        value: managerUsers,
-      },
-      {
-        title: "Employés",
-        value: employeeUsers,
-      },
-      {
-        title: "Freelances",
-        value: freelanceUsers,
-      },
-      {
-        title: "Nombre d'entreprises",
+        title: "Entreprises",
         value: totalNbrCompanies,
       },
       {
-        title: "Nombre de tâches",
-        value: totalTasks,
+        title: "Tâches à finir",
+        value: totalTasks - completedTasks,
       },
       {
         title: "Tâches terminées",
         value: completedTasks,
+      },
+      {
+        title: "Somme des paiements effectué",
+        value: `${totalMade.toFixed(2)} €`,
+      },
+      {
+        title: "Somme des paiements reçus",
+        value: `${totalReceived.toFixed(2)} €`,
+      },
+      {
+        title: "Paiements en attente",
+        value: pendingPaymentsCount,
       },
     ];
     if (nextHoliday) {
@@ -77,8 +130,16 @@ const getAdminStats = async (userId) => {
 
 const getManagerStats = async (userId, companyId) => {
   try {
-    const employees = await User.find({ companyId });
-    const user = await User.findById(userId);
+    const [employees, user, projects, tasks, payments, pendingPaymentsCount] =
+      await Promise.all([
+        User.find({ companyId }),
+        User.findById(userId),
+        Project.find({ companyId }),
+        Task.find({ userId }),
+        Payment.aggregate(getPaymentsAggregate(userId)),
+        Payment.countDocuments(getPendingPaymentsAggregate(userId)),
+      ]);
+
     const nextHoliday = user.nextHoliday;
     const totalManagers = employees.filter(
       (employee) => employee.role === "manager"
@@ -86,16 +147,16 @@ const getManagerStats = async (userId, companyId) => {
     const totalEmployees = employees.filter(
       (employee) => employee.role === "employee"
     ).length;
-    const projects = await Project.find({ companyId });
     const projectsInProgress = projects.filter(
       (project) => project.status === "in progress"
     );
     const projectsCompleted = projects.filter(
       (project) => project.status === "completed"
     );
-    const tasks = await Task.find({ userId });
     const totalTasks = tasks.length;
     const completedTasks = tasks.filter((task) => task.completed).length;
+    const { totalMade = 0, totalReceived = 0 } = payments[0];
+
     const stats = [
       {
         title: "Nombre d'employés",
@@ -106,10 +167,6 @@ const getManagerStats = async (userId, companyId) => {
         value: totalManagers,
       },
       {
-        title: "Tous les projets",
-        value: projects.length,
-      },
-      {
         title: "Projets en cours",
         value: projectsInProgress.length,
       },
@@ -118,12 +175,24 @@ const getManagerStats = async (userId, companyId) => {
         value: projectsCompleted.length,
       },
       {
-        title: "Nombre de tâches",
-        value: totalTasks,
+        title: "Tâches à finir",
+        value: totalTasks - completedTasks,
       },
       {
         title: "Tâches terminées",
         value: completedTasks,
+      },
+      {
+        title: "Somme des paiements effectué",
+        value: `${totalMade.toFixed(2)} €`,
+      },
+      {
+        title: "Somme des paiements reçus",
+        value: `${totalReceived.toFixed(2)} €`,
+      },
+      {
+        title: "Paiements en attente",
+        value: pendingPaymentsCount,
       },
     ];
     if (nextHoliday) {
@@ -142,23 +211,27 @@ const getManagerStats = async (userId, companyId) => {
 
 const getEmployeeStats = async (userId) => {
   try {
-    const user = await User.findById(userId);
+    const [user, projects, tasks, payments, pendingPaymentsCount] =
+      await Promise.all([
+        User.findById(userId),
+        Project.find({ users: userId }),
+        Task.find({ userId }),
+        Payment.aggregate(getPaymentsAggregate(userId)),
+        Payment.countDocuments(getPendingPaymentsAggregate(userId)),
+      ]);
+
     const nextHoliday = user.nextHoliday;
-    const projects = await Project.find({ users: userId });
     const projectsInProgress = projects.filter(
       (project) => project.status === "in progress"
     );
     const projectsCompleted = projects.filter(
       (project) => project.status === "completed"
     );
-    const tasks = await Task.find({ userId });
     const totalTasks = tasks.length;
     const completedTasks = tasks.filter((task) => task.completed).length;
+    const { totalMade = 0, totalReceived = 0 } = payments[0];
+
     const stats = [
-      {
-        title: "Tous les projets",
-        value: projects.length,
-      },
       {
         title: "Projets en cours",
         value: projectsInProgress.length,
@@ -168,12 +241,24 @@ const getEmployeeStats = async (userId) => {
         value: projectsCompleted.length,
       },
       {
-        title: "Nombre de tâches",
-        value: totalTasks,
+        title: "Tâches à finir",
+        value: totalTasks - completedTasks,
       },
       {
         title: "Tâches terminées",
         value: completedTasks,
+      },
+      {
+        title: "Somme des paiements effectué",
+        value: `${totalMade.toFixed(2)} €`,
+      },
+      {
+        title: "Somme des paiements reçus",
+        value: `${totalReceived.toFixed(2)} €`,
+      },
+      {
+        title: "Paiements en attente",
+        value: pendingPaymentsCount,
       },
     ];
     if (nextHoliday) {

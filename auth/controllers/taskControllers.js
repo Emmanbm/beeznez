@@ -4,13 +4,15 @@ const { createTaskFunction } = require("../utils/utilsControllers/tasksUtils");
 
 const createTask = async (req, res) => {
   try {
-    const { name, description, dueDate, priority, userId } = req.body;
+    const { name, description, dueDate, priority, userId, projectId } =
+      req.body;
     const newTask = await createTaskFunction({
       name,
       description,
       dueDate,
       priority,
       userId,
+      projectId,
     });
     res.status(201).json({ task: newTask });
   } catch (error) {
@@ -21,8 +23,23 @@ const createTask = async (req, res) => {
 
 const getTasks = async (req, res) => {
   try {
-    const { userId } = req.query;
-    const tasks = await Task.find({ userId }).sort({
+    const { userId, projectId } = req.query;
+    let findObject = null;
+    if (projectId && userId) {
+      findObject = {
+        $and: [{ userId }, { projectId }],
+      };
+    } else if (userId) {
+      findObject = { userId };
+    } else if (projectId) {
+      findObject = { projectId };
+    }
+    if (!findObject) {
+      return res
+        .status(400)
+        .json({ message: "Veuillez fournir un filtre de recherche" });
+    }
+    const tasks = await Task.find(findObject).sort({
       completed: 1,
       createdAt: -1,
     });

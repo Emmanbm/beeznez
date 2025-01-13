@@ -5,7 +5,14 @@ import CustomToolbar from "./CustomToolbar";
 
 const noSortableColumns = ["action", "completed", "logo"];
 
-const RenderDataGrid = ({ loading, rows, columns }) => {
+const RenderDataGrid = ({
+  loading,
+  rows,
+  columns,
+  width = 1000,
+  containerProps,
+  ...props
+}) => {
   const renderColumns = useMemo(() => {
     return columns.map((column) => ({
       ...column,
@@ -19,13 +26,14 @@ const RenderDataGrid = ({ loading, rows, columns }) => {
     <Box
       height='100%'
       minWidth='100%'
-      width={1000}
+      width={width}
       overflow='auto'
       sx={{
         "& .HeaderDataGrid": {
           bgcolor: (theme) => alpha(theme.palette.primary.main, 0.2),
         },
-      }}>
+      }}
+      {...containerProps}>
       <DataGrid
         rows={rows}
         columns={renderColumns}
@@ -35,6 +43,11 @@ const RenderDataGrid = ({ loading, rows, columns }) => {
         }}
         disableRowSelectionOnClick
         loading={loading}
+        initialState={{
+          pagination: { paginationModel: { pageSize: 5 } },
+        }}
+        pageSizeOptions={[5, 10, 25, 50, 100]}
+        {...props}
       />
     </Box>
   );

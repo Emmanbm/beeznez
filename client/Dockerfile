@@ -13,6 +13,9 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 RUN npm install -g pnpm && pnpm install
 COPY . .
+# RUN VITE_API_BASE_URL=https://api-gateway-96400611877.europe-west9.run.app/api pnpm run build
+ENV VITE_API_BASE_URL=https://backend.beeznez.fr/api
+ENV VITE_PAYPAL_CLIENT_ID=AZtP9UjVyhzLQJ1Up_sqkU6MUhu-0cYtV3ixJODmRDp1FlyZZl7XDpTvRjNIQYAoxVGB_bFLzTiw1iDK
 RUN pnpm run build
 
 # Serveur Nginx pour servir les fichiers statiques
@@ -28,3 +31,11 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 # Lancer Nginx
 CMD ["nginx", "-g", "daemon off;"]
+
+# FROM node:20
+# WORKDIR /app
+# COPY package.json pnpm-lock.yaml ./
+# RUN npm install -g pnpm && pnpm install
+# COPY . .
+# EXPOSE 3000
+# CMD [ "pnpm", "run", "dev", "--host" ]

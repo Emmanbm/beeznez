@@ -108,10 +108,7 @@ const Login = () => {
                 variant='contained'
                 type='submit'
               />
-              <Typography
-                fontSize='small'
-                component={Link}
-                to='/forgotten-password'>
+              <Typography fontSize='small' component={Link} to='#'>
                 Mot de passe oublié
               </Typography>
             </CardActions>

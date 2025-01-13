@@ -19,39 +19,40 @@ Currently, two official plugins are available:
 
 - Se connecter au compte Google Cloud :
 
-  ```bash
-      gcloud auth login
-  ```
+```bash
+    gcloud auth login
+```
+
+- Authentifier Docker avec GCP (ici on utilise Paris, donc europe-west9)
+
+```bash
+    gcloud auth configure-docker europe-west9-docker.pkg.dev
+```
 
 - En utilisant Docker Compose, construire les images de chaque micro-service individuellement pour pouvoir les déployer :
 
-  ```bash
-      docker-compose -f docker-compose.prod.yml build
-  ```
+```bash
+    docker compose -f docker-compose.prod.yml build
+```
 
-- Authentifier Docker avec GCP (ici en on utilise Paris, donc europe-west9)
+- Taguer chaque image vers GCP :
 
-  ```bash
-      gcloud auth configure-docker europe-west9-docker.pkg.dev
-  ```
+```bash
+docker tag beeznez-auth europe-west9-docker.pkg.dev/beeznez-446307/beeznez/auth:latest
+docker tag beeznez-api-gateway europe-west9-docker.pkg.dev/beeznez-446307/beeznez/api-gateway:latest
+docker tag beeznez-client europe-west9-docker.pkg.dev/beeznez-446307/beeznez/client:latest
+```
 
-- Taguer chaque image vers GCR :
+- Pousser chaque image vers GCP :
 
-  ```bash
-    docker tag beeznez-api-gateway europe-west9-docker.pkg.dev/beeznez-446307/beeznez/api-gateway:latest
-    docker tag beeznez-auth europe-west9-docker.pkg.dev/beeznez-446307/beeznez/auth:latest
-    docker tag beeznez-client europe-west9-docker.pkg.dev/beeznez-446307/beeznez/client:latest
-  ```
-
-- Pousser chaque image vers GCR :
-
-  ```bash
-      docker push europe-west9-docker.pkg.dev/beeznez-446307/beeznez/api-gateway:latest
-      docker push europe-west9-docker.pkg.dev/beeznez-446307/beeznez/auth:latest
-      docker push europe-west9-docker.pkg.dev/beeznez-446307/beeznez/client:latest
-  ```
+```bash
+docker push europe-west9-docker.pkg.dev/beeznez-446307/beeznez/auth:latest
+docker push europe-west9-docker.pkg.dev/beeznez-446307/beeznez/api-gateway:latest
+docker push europe-west9-docker.pkg.dev/beeznez-446307/beeznez/client:latest
+```
 
 - Déployer chaque micro-service :
+
   - **auth**
     ```bash
     gcloud run deploy auth \
@@ -59,7 +60,8 @@ Currently, two official plugins are available:
         --platform=managed \
         --region=europe-west9 \
         --allow-unauthenticated \
-        --port=3000
+        --env-vars-file auth/env.yaml \
+        --port=8081
     ```
   - **api-gateway**
     ```bash
@@ -68,14 +70,29 @@ Currently, two official plugins are available:
         --platform=managed \
         --region=europe-west9 \
         --allow-unauthenticated \
+        --env-vars-file gateway/env.yaml \
         --port=3000
     ```
   - **client**
+
     ```bash
     gcloud run deploy client \
         --image=europe-west9-docker.pkg.dev/beeznez-446307/beeznez/client:latest \
         --platform=managed \
         --region=europe-west9 \
         --allow-unauthenticated \
-        --port=5173
+        --env-vars-file client/env.yaml \
+        --port=80
+    ```
+
+    - J'ai été contraint d'utiliser une autre region pour `client`, pour pouvoir utiliser un nom de domaine personnalisé. Ce n'était pas possible dans la region `europe-west9`.
+
+    ```bash
+    gcloud run deploy client \
+        --image=europe-west9-docker.pkg.dev/beeznez-446307/beeznez/client:latest \
+        --platform=managed \
+        --region=europe-west1 \
+        --allow-unauthenticated \
+        --env-vars-file client/env.yaml \
+        --port=80
     ```

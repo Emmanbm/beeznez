@@ -44,7 +44,7 @@ const Task = ({
         data: { ...task, completed: !task.completed },
       });
       const updatedTask = response.data?.task;
-      console.log(updatedTask);
+      // console.log(updatedTask);
 
       dispatch(updateTask({ updatedTask }));
     } catch (error) {
@@ -140,7 +140,7 @@ const Task = ({
                 )}
                 register={register}
                 value={editingTask.priority}
-                onChange={handleDateChange}
+                onChange={handleInputChange}
               />
             </Grid>
             <Grid item xs={1}>

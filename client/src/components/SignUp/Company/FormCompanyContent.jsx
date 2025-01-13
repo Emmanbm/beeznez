@@ -88,7 +88,7 @@ const FormCompanyContent = ({
             register={register}
             name='email'
             label='Adresse e-mail'
-            placeholder='contact@beeznez.com'
+            placeholder='contact@beeznez.fr'
           />
           <CustomTextField
             register={register}

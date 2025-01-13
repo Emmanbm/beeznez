@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { columns } from "./columns";
 import useServerApi from "../../../hooks/useServerApi";
@@ -7,7 +7,7 @@ import RenderDataGrid from "../RenderDataGrid";
 
 export default function UsersDatagrid() {
   const rows = useSelector((store) => store.user?.users || []);
-  const { role, companyId } = useSelector((store) => store.user || {});
+  const { id, role, companyId } = useSelector((store) => store.user || {});
   const dispatch = useDispatch();
   const requestRef = useRef("allowed");
 
@@ -35,5 +35,11 @@ export default function UsersDatagrid() {
     }
   }, [role, companyId]);
 
-  return <RenderDataGrid rows={rows} columns={columns} loading={loading} />;
+  return (
+    <RenderDataGrid
+      rows={rows?.filter((user) => user.id !== id)}
+      columns={columns}
+      loading={loading}
+    />
+  );
 }

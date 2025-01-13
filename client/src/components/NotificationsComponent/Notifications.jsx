@@ -50,7 +50,10 @@ const Notifications = () => {
         />
       </Stack>
 
-      <List sx={{ width: { xs: "100vw", sm: "100vw", md: "25vw" } }}>
+      <List
+        sx={{
+          width: { xs: "100vw", sm: "100vw", md: "25vw" },
+        }}>
         {notifications.length > 0 ? (
           notifications.map((notification) => (
             <Notification key={notification._id} notification={notification} />

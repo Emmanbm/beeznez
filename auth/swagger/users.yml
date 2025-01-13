@@ -1,0 +1,48 @@
+# Documentation pour les routes utilisateurs
+
+tags:
+  - name: Users
+    description: Gestion des utilisateurs
+
+paths:
+  /users:
+    get:
+      summary: Retourne la liste des utilisateurs
+      tags:
+        - Users
+      responses:
+        "200":
+          description: Liste des utilisateurs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - email
+      properties:
+        id:
+          type: string
+          description: ID unique de l'utilisateur
+        firstName:
+          type: string
+          description: Prénom de l'utilisateur
+        lastName:
+          type: string
+          description: Nom de famille de l'utilisateur
+        email:
+          type: string
+          description: Adresse e-mail de l'utilisateur
+      example:
+        id: 123456
+        firstName: John
+        lastName: Doe
+        email: john.doe@example.com

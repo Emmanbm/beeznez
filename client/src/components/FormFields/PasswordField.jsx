@@ -56,7 +56,7 @@ const PasswordField = ({
     }
 
     return "";
-  }, [formErrors, apiErrors]);
+  }, [formErrors?.[name]?.message, apiErrors?.[name]]);
 
   return (
     <Box>

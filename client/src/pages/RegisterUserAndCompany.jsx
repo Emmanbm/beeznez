@@ -14,7 +14,7 @@ import { useDispatch, useSelector } from "react-redux";
 import useServerApi from "../hooks/useServerApi";
 import LoadingButton from "../components/LoadingButton";
 import { useNavigate } from "react-router-dom";
-import ModalError from "../components/ModalError";
+import FormModalError from "../components/FormModalError";
 import { login } from "../redux/user";
 
 const steps = ["Créer un compte utilisateur", "Créer un compte entreprise"];

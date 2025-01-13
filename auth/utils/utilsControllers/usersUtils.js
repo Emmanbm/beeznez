@@ -1,4 +1,5 @@
 const User = require("../../models/User");
+const { createNotificationFunction } = require("./notificationsUtils");
 
 const createUserFunction = async (userData) => {
   try {
@@ -16,6 +17,11 @@ const createUserFunction = async (userData) => {
     const user = new User(newUser);
 
     const savedUser = await user.save();
+    await createNotificationFunction({
+      userId: savedUser._id,
+      title: "Bienvenue sur BeeZnez",
+      message: "Toute l'équipe BeeZnez vous souhaite la bienvenue !",
+    });
     return savedUser;
   } catch (error) {
     throw error;

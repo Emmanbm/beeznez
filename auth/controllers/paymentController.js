@@ -1,5 +1,35 @@
 const Payment = require("../models/Payment");
 
+const getPayments = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { id: authId, role } = req.auth;
+    let findObject = null;
+
+    if (role === "admin") {
+      findObject = {};
+    } else {
+      if (userId === authId) {
+        findObject = {
+          $or: [{ payerId: userId }, { recipientId: userId }],
+        };
+      }
+    }
+    if (findObject === null) {
+      return res.status(403).json({ error: "Accès non autorisé" });
+    }
+    const payments = await Payment.find(findObject)
+      .sort({ createdAt: -1 })
+      .populate({
+        path: "payerId recipientId",
+        select: "firstName lastName email id",
+      });
+    return res.status(200).json(payments);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 const calculateTotalPayments = async (req, res) => {
   try {
     const { companyId } = req.body;
@@ -55,8 +85,25 @@ const deletePersonalData = async (req, res) => {
   }
 };
 
+const updateStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status = "success" } = req.body;
+    const payment = await Payment.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true }
+    );
+    return res.status(200).json(payment);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   calculateTotalPayments,
   calculatePaymentsPerMonth,
   deletePersonalData,
+  getPayments,
+  updateStatus,
 };

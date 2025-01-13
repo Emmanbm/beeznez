@@ -10,6 +10,7 @@ const taskSchema = new mongoose.Schema({
     enum: ["low", "medium", "high"],
     default: "medium",
   },
+  projectId: { type: mongoose.Schema.Types.ObjectId, ref: "Project" },
   completed: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },

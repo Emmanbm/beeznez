@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Button, CircularProgress } from "@mui/material";
 
-const LoadingButton = ({ loading, title, ...props }) => {
+const LoadingButton = ({ loading, title = "", ...props }) => {
   return (
     <Box sx={{ m: 1, position: "relative" }}>
       <Button {...props}>{title}</Button>

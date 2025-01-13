@@ -1,9 +1,7 @@
-version: "3.8"
-
 services:
   api-gateway:
     build:
-      context: ./gateway
+      context: ./api-gateway
       dockerfile: Dockerfile
       target: dev
     container_name: api-gateway
@@ -12,13 +10,13 @@ services:
     depends_on:
       - auth
     env_file:
-      - ./gateway/.env.dev
+      - ./api-gateway/.env.dev
     develop:
       watch:
-        - path: ./gateway/
+        - path: ./api-gateway/
           target: /app/
           action: sync
-        - path: ./gateway/package.json
+        - path: ./api-gateway/package.json
           action: rebuild
 
   auth:

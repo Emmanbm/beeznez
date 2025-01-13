@@ -6,30 +6,22 @@ const {
   registerUser,
   getUserInfoFromToken,
   getUsers,
-  // registerCompanyManager,
   updateUser,
-  // registerCompanyAndManager,
-  registerCompany,
   deleteUser,
+  changeUserPassword,
 } = require("../controllers/userController");
 
 const verifyToken = require("../middlewares/verifyToken");
 const verifyAdminToken = require("../middlewares/verifyAdminToken");
-// const { getCompanies } = require("../controllers/companyController");
 const { getStats } = require("../controllers/statsControllers");
 
-router.get("/users", getUsers);
 router.post("/register", registerUser);
-// router.post("/register/manager", registerCompanyManager);
-// router.post("/register/company/and/manager", registerCompanyAndManager);
 router.post("/login", login);
+router.get("/users", verifyToken, getUsers);
 router.get("/getRole", verifyToken, getUserInfoFromToken);
 router.put("/update/:id", verifyToken, updateUser);
-router.delete("/delete/user/:id", deleteUser);
-
-// router.get("/companies", getCompanies);
-router.post("/register/company", registerCompany);
-
 router.get("/stats", verifyToken, getStats);
+router.delete("/delete/user/:id", verifyAdminToken, deleteUser);
+router.put("/change/user/password", verifyAdminToken, changeUserPassword);
 
 module.exports = router;

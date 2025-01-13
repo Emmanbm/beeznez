@@ -1,8 +1,8 @@
 import { Box } from "@mui/material";
-import React from "react";
+import React, { useEffect } from "react";
 import Topbar from "../components/Topbar";
 import { Outlet } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useTheme } from "@emotion/react";
 import { useMediaQuery } from "@mui/material";
 import Footer from "../components/Footer";
@@ -15,6 +15,12 @@ const CustomLayout = () => {
   const sidebarIsOpen = useSelector((store) => store.app?.openSidebar);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const dispatch = useDispatch();
+  useEffect(() => {
+    if (isMobile) {
+      dispatch({ type: "app/toggleSidebar", payload: false });
+    }
+  }, [isMobile]);
 
   return (
     <Box
@@ -39,7 +45,7 @@ const CustomLayout = () => {
             ml: isMobile ? 0 : sidebarIsOpen ? "15vw" : 0,
             minWidth: sidebarIsOpen ? "calc(100% - 15vw)" : "100%",
             overflow: "auto",
-            transition: "margin-left .4s ease-in-out",
+            transition: "all .8s ease-in-out",
           }}>
           <Outlet />
         </Box>

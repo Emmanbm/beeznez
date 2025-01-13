@@ -32,4 +32,18 @@ const getCompaniesFunction = async () => {
   }
 };
 
-module.exports = { createCompanyFunction, getCompaniesFunction };
+const getCompanyInvitationCode = async ({ role, companyId }) => {
+  try {
+    if (!["admin", "manager"].includes(role)) return null;
+    const company = await Company.findById(companyId);
+    return company.invitationCode;
+  } catch (error) {
+    throw error;
+  }
+};
+
+module.exports = {
+  createCompanyFunction,
+  getCompaniesFunction,
+  getCompanyInvitationCode,
+};

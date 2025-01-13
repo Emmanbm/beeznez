@@ -11,6 +11,11 @@ const notificationSchema = new mongoose.Schema({
     required: [true, "Le titre de la notification est requis"],
   },
   message: { type: String, required: [true, "Le message est requis"] },
+  type: {
+    type: String,
+    enum: ["info", "success", "error", "warning"],
+    default: "info",
+  },
   isRead: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
 });

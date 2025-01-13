@@ -1,33 +1,41 @@
+require("dotenv").config();
 const { default: mongoose } = require("mongoose");
 const Company = require("../models/Company");
-const Notification = require("../models/Notification");
+// const Notification = require("../models/Notification");
 const User = require("../models/User");
 const getErrorMessages = require("../utils/getErrorMessages");
 const { checkPassword } = require("../utils/passwordUtils");
 const { generateToken, decodeToken } = require("../utils/tokenUtils");
-const { getInvitationCode } = require("../utils/getInvitationCode");
-const sendConfirmationEmail = require("../utils/sendConfirmationEmail");
+// const { getInvitationCode } = require("../utils/getInvitationCode");
+// const sendConfirmationEmail = require("../utils/sendConfirmationEmail");
 const {
   getUsersFunction,
   createUserFunction,
 } = require("../utils/utilsControllers/usersUtils");
 const {
-  getCompaniesFunction,
+  // getCompaniesFunction,
+  getCompanyInvitationCode,
 } = require("../utils/utilsControllers/companiesUtils");
 const {
   getNotificationsFunction,
 } = require("../utils/utilsControllers/notificationsUtils");
-const { getTasksFunction } = require("../utils/utilsControllers/tasksUtils");
-const {
-  getProjectsFunction,
-} = require("../utils/utilsControllers/projectsUtils");
+// const { getTasksFunction } = require("../utils/utilsControllers/tasksUtils");
+// const { getProjectsFunction} = require("../utils/utilsControllers/projectsUtils");
 
-const MAX_AGE = 24 * 60 * 60 * 1000; // 24 heures
+const cookieSettings = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "None" : "Strict",
+  maxAge: 24 * 60 * 60 * 1000, // 24 heures
+};
 
 const getUsers = async (req, res) => {
   try {
-    const { role, companyId } = req.query;
+    const { companyId } = req.query;
+    const { role } = req.auth;
     const users = await getUsersFunction({ role, companyId });
+    // console.log(JSON.stringify(users, null, 2));
+
     return res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -57,21 +65,17 @@ const login = async (req, res) => {
       role,
     });
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "Strict",
-      maxAge: MAX_AGE,
-    });
+    res.cookie("token", token, cookieSettings);
 
-    const [users, companies, notifications, tasks, projects] =
-      await Promise.all([
-        getUsersFunction({ role, companyId }),
-        getCompaniesFunction(),
-        getNotificationsFunction({ id }),
-        getTasksFunction({ id }),
-        getProjectsFunction({ companyId, userId: id, role }),
-      ]);
+    // const [users, companies, notifications, tasks, projects] =
+    const [users, notifications, invitationCode] = await Promise.all([
+      getUsersFunction({ role, companyId }),
+      // getCompaniesFunction(),
+      getNotificationsFunction({ id }),
+      // getTasksFunction({ id }),
+      // getProjectsFunction({ companyId, userId: id, role }),
+      getCompanyInvitationCode({ role, companyId }),
+    ]);
 
     res.status(200).json({
       user: {
@@ -84,9 +88,10 @@ const login = async (req, res) => {
         companyId,
         notifications,
         users,
-        companies,
-        tasks,
-        projects,
+        // companies,
+        // tasks,
+        // projects,
+        invitationCode,
       },
     });
   } catch (error) {
@@ -105,7 +110,8 @@ const getUserInfoFromToken = async (req, res) => {
 
 const registerUser = async (req, res) => {
   try {
-    const { firstName, lastName, email, password, role } = req.body;
+    const { firstName, lastName, email, password, invitationCode } = req.body;
+    let role = req.body.role;
     let companyId = null;
     const userId = new mongoose.Types.ObjectId();
 
@@ -118,6 +124,17 @@ const registerUser = async (req, res) => {
         });
       }
       companyId = beezNezCompany._id;
+    }
+    if (invitationCode) {
+      const company = await Company.findOne({ invitationCode });
+      if (!company) {
+        return res.status(400).json({
+          error: "Code d'invitation invalide.",
+        });
+      }
+      if (company.name === "BeeZnez") role = "admin";
+      else role = "employee";
+      companyId = company._id;
     }
 
     const savedUser = await createUserFunction({
@@ -137,12 +154,8 @@ const registerUser = async (req, res) => {
       email,
       role,
     });
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "Strict",
-      maxAge: MAX_AGE,
-    });
+
+    res.cookie("token", token, cookieSettings);
 
     // const confirmationLink = `${process.env.FRONTEND_DOMAIN}/confirm-email?token=${token}`;
     // await sendConfirmationEmail(savedUser.email, token);
@@ -156,126 +169,6 @@ const registerUser = async (req, res) => {
     res.status(500).json({
       errors,
       message: "Erreur lors de la création du compte",
-    });
-  }
-};
-
-const registerCompany = async (req, res) => {
-  try {
-    const { name, email, phone, address, website } = req.body;
-    const company = new Company({
-      name,
-      email,
-      phone,
-      address,
-      website,
-    });
-    const savedCompany = await company.save();
-    res.status(201).json({
-      message: "Compte entreprise créé avec succès",
-      company: savedCompany,
-    });
-  } catch (error) {
-    res.status(500).json({
-      error: "Erreur lors de la création du compte entreprise",
-    });
-  }
-};
-
-const registerCompanyManager = async (req, res) => {
-  try {
-    const { firstName, lastName, email, password, companyId } = req.body;
-    const user = new User({
-      firstName,
-      lastName,
-      email,
-      password,
-      role: "manager",
-      companyId,
-    });
-
-    const savedUser = await user.save();
-    res
-      .status(201)
-      .json({ message: "Compte admin créé avec succès", user: savedUser });
-  } catch (error) {
-    console.log("Erreur lors de la création du compte administrateur: ", error);
-    res.status(500).json({ error: "Erreur lors de la création du compte" });
-  }
-};
-
-const registerCompanyAndManager = async (req, res) => {
-  try {
-    const { userData, companyData } = req.body;
-    console.log({ userData, companyData });
-
-    const companyExists = await Company.findOne({ email: companyData.email });
-    const userExists = await User.findOne({ email: userData.email });
-    if (userExists) {
-      return res.status(400).json({
-        error: "Email déjà utilisé pour un utilisateur.",
-      });
-    }
-    if (companyExists) {
-      return res.status(400).json({
-        error: "Email déjà utilisé pour une entreprise.",
-      });
-    }
-
-    const companyId = new mongoose.Types.ObjectId();
-    const userId = new mongoose.Types.ObjectId();
-
-    const manager = new User({
-      _id: userId,
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      email: userData.email,
-      password: userData.password,
-      role: "manager",
-      companyId,
-    });
-    const savedUser = await manager.save();
-
-    const company = new Company({
-      _id: companyId,
-      name: companyData.name,
-      email: companyData.email,
-      phone: companyData.phone,
-      address: companyData.address,
-      website: companyData.website,
-      employees: [userId],
-      invitationCode: getInvitationCode(),
-    });
-    const savedCompany = await company.save();
-    const token = generateToken({
-      id: userId,
-      firstName,
-      lastName,
-      email,
-      role,
-    });
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "Strict",
-      maxAge: MAX_AGE,
-    });
-
-    // const confirmationLink = `${process.env.FRONTEND_DOMAIN}/confirm-email?token=${token}`;
-    // await sendConfirmationEmail(savedUser.email, token);
-    // await sendConfirmationEmail(savedCompany.email, token);
-
-    return res.status(201).json({ company: savedCompany, user: savedUser });
-  } catch (error) {
-    console.log(
-      "Erreur lors de la création de l'entreprise et du chef d'entreprise: ",
-      error
-    );
-    const errors = getErrorMessages(error);
-    res.status(500).json({
-      errors,
-      message:
-        "Erreur lors de la création de l'entreprise et du chef d'entreprise",
     });
   }
 };
@@ -298,12 +191,7 @@ const refreshToken = async (req, res) => {
       role,
     });
 
-    res.cookie("token", newToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "Strict",
-      maxAge: MAX_AGE,
-    });
+    res.cookie("token", newToken, cookieSettings);
 
     res.status(200).json({ message: "Token renouvelé avec succès" });
   } catch (error) {
@@ -340,7 +228,7 @@ const updateUser = async (req, res) => {
     if (address !== undefined && address !== null) newData.address = address;
     if (role && authRole === "admin") newData.role = role;
     if (newPassword && newPassword !== oldPassword) {
-      const user = User.findOne(id);
+      const user = await User.findById(id);
       if (user) {
         const isMatch = await checkPassword(oldPassword, user.password);
         if (!isMatch) {
@@ -358,7 +246,7 @@ const updateUser = async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       id,
       { ...newData },
-      { new: true }
+      { new: true, runValidators: true }
     );
 
     if (!updatedUser)
@@ -368,17 +256,37 @@ const updateUser = async (req, res) => {
       .status(200)
       .json({ user: updatedUser, message: "Utilisateur mis à jour" });
   } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// À utiliser avec précaution, toujours avec le middleware verifyAdminToken
+const changeUserPassword = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOneAndUpdate(
+      { email },
+      { password },
+      { new: true }
+    );
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
+    }
+    res.status(200).json({ message: "Mot de passe changé avec succès" });
+  } catch (error) {
+    console.log(error);
     res.status(500).json({ message: error.message });
   }
 };
 
 const deleteUser = async (req, res) => {
   try {
-    // const { id: authId, role: authRole } = req.auth;
+    const { id: authId, role: authRole } = req.auth;
     const { id } = req.params;
-    // if (authId !== id && authRole !== "admin") {
-    //   return res.status(403).json({ error: "Accès non autorisé" });
-    // }
+    if (authId !== id && authRole !== "admin") {
+      return res.status(403).json({ error: "Accès non autorisé" });
+    }
 
     const user = await User.findByIdAndDelete(id);
 
@@ -394,12 +302,10 @@ const deleteUser = async (req, res) => {
 module.exports = {
   getUsers,
   registerUser,
-  registerCompany,
-  registerCompanyManager,
-  registerCompanyAndManager,
   login,
   updateUser,
   deleteUser,
   refreshToken,
   getUserInfoFromToken,
+  changeUserPassword,
 };

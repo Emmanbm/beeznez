@@ -30,6 +30,7 @@ const appConfig = {
         action: {
           hover: "#0056D2",
         },
+        gradient: "linear-gradient(90deg, #0055d2, #f5f5f5)",
       },
     },
     dark: {
@@ -40,7 +41,8 @@ const appConfig = {
         },
         background: {
           default: "#000000",
-          paper: "#121212",
+          // paper: "#121212",
+          paper: "#070707",
         },
         text: {
           primary: "#ffffff",
@@ -49,6 +51,7 @@ const appConfig = {
         action: {
           active: "#FFD700",
         },
+        gradient: "linear-gradient(75deg, #ffd700, #121212)",
       },
     },
     components: {

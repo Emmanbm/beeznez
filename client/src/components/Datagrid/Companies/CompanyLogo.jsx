@@ -8,7 +8,14 @@ const CompanyLogo = ({ row: data, ...otherProps }) => {
     () => companies.find((c) => c.id === data?.id),
     [companies]
   );
-  return <Box component='img' src={company.logo} width={20} />;
+  return (
+    <Box
+      component='img'
+      alt={`Logo ${company?.name}`}
+      src={company?.logo}
+      width={20}
+    />
+  );
 };
 
 export default CompanyLogo;

@@ -14,6 +14,7 @@ export const initialState = {
   tasks: [],
   projects: [],
   companies: [],
+  payments: [],
   elapsedTime: null,
 };
 
@@ -105,6 +106,9 @@ const userSlice = createSlice({
     getCompanies: (state, action) => {
       state.companies = action.payload.companies;
     },
+    getPayments: (state, action) => {
+      state.payments = action.payload.payments;
+    },
   },
 });
 
@@ -125,6 +129,7 @@ export const {
   updateProject,
   deleteProject,
   getCompanies,
+  getPayments,
 } = userSlice.actions;
 
 export default userSlice.reducer;

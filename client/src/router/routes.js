@@ -3,13 +3,11 @@ import ProtectedRoute from "./ProtectedRoute";
 import Dashboard from "../pages/Dashboard";
 import Payments from "../pages/Payments";
 import Contact from "../pages/Contact";
-import About from "../pages/manager/About";
+// import About from "../pages/manager/About";
 import RGPD from "../pages/RGPD";
 import CGU from "../pages/CGU";
 import Login from "../pages/Login";
 import React from "react";
-import Employees from "../pages/manager/Employees";
-import Users from "../pages/admin/Users";
 import Companies from "../pages/admin/Companies";
 import CreateAdmin from "../pages/admin/CreateAdmin";
 import TakeALeave from "../pages/TakeALeave";
@@ -17,7 +15,7 @@ import ContactAFreelance from "../pages/ContactAFreelance";
 import Messages from "../pages/Messages";
 import Leaves from "../pages/manager/Leaves";
 import Tasks from "../pages/Tasks";
-import JoinACompany from "../pages/employees/JoinACompany";
+import JoinACompany from "../pages/JoinACompany";
 import Projects from "../pages/Projects";
 import SignUp from "../pages/SignUp";
 import Blog from "../pages/Blog";
@@ -25,6 +23,9 @@ import NotFound from "../pages/NotFound";
 import RegisterUser from "../pages/RegisterUser";
 import RegisterCompany from "../pages/RegisterCompany";
 import RegisterUserAndCompany from "../pages/RegisterUserAndCompany";
+import PaymentResult from "../pages/PaymentResult";
+import Users from "../pages/Users";
+import About from "../pages/About";
 
 export const pagesWithLayout = [
   {
@@ -85,7 +86,7 @@ export const pagesWithLayout = [
     path: "employees",
     element: ProtectedRoute,
     props: {
-      children: [React.createElement(Employees, { key: "employees" })],
+      children: [React.createElement(Users, { key: "employees" })],
       allowedRoles: ["manager", "admin"],
     },
   },
@@ -104,6 +105,15 @@ export const pagesWithLayout = [
     },
   },
   {
+    path: "payments/:paymentMethod/:result",
+    element: ProtectedRoute,
+    props: {
+      children: [
+        React.createElement(PaymentResult, { key: "payments/:result" }),
+      ],
+    },
+  },
+  {
     path: "leaves",
     element: ProtectedRoute,
     props: {
@@ -118,14 +128,14 @@ export const pagesWithLayout = [
       children: [React.createElement(Tasks, { key: "tasks" })],
     },
   },
-  {
-    path: "about",
-    element: ProtectedRoute,
-    props: {
-      children: [React.createElement(About, { key: "about" })],
-      allowedRoles: ["admin", "manager"],
-    },
-  },
+  // {
+  //   path: "about",
+  //   element: ProtectedRoute,
+  //   props: {
+  //     children: [React.createElement(About, { key: "about" })],
+  //     allowedRoles: ["admin", "manager"],
+  //   },
+  // },
   {
     path: "join/a/company",
     element: ProtectedRoute,
@@ -137,17 +147,25 @@ export const pagesWithLayout = [
 ];
 
 export const otherPages = [
+  // {
+  //   path: "/",
+  //   element: Navigate,
+  //   props: {
+  //     to: "/blog",
+  //     replace: true,
+  //   },
+  // },
   {
     path: "/",
-    element: Navigate,
-    props: {
-      to: "/blog",
-      replace: true,
-    },
+    element: Blog,
   },
   {
     path: "/blog",
     element: Blog,
+  },
+  {
+    path: "/about",
+    element: About,
   },
   {
     path: "/login",
@@ -174,7 +192,7 @@ export const otherPages = [
     element: Contact,
   },
   {
-    path: "/rgpd",
+    path: "/privacy-policy",
     element: RGPD,
   },
   {

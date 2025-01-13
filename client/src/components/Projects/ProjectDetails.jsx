@@ -12,13 +12,15 @@ import { closeModal } from "../../redux/tempData";
 import TodoList from "../ToDoList/ToDoList";
 
 const ProjectDetails = () => {
-  const { open, data } = useSelector(
+  const { open, data: project } = useSelector(
     (store) => store.tempData.modals.projectDetails || {}
   );
-  const projects = useSelector((store) => store.user.projects || []);
-  const project = useMemo(() => {
-    return projects.find((p) => p.id === data?.id) || {};
-  }, [data?.id, data?.tasks]);
+  const projectId = project?.id;
+  const allTasks = useSelector((store) => store.user?.tasks || []);
+  const projectTasks = useMemo(
+    () => allTasks?.filter((task) => task.projectId === projectId && projectId),
+    [allTasks, projectId]
+  );
   const dispatch = useDispatch();
   const handleClose = () => {
     dispatch(closeModal({ modal: "projectDetails" }));
@@ -32,7 +34,10 @@ const ProjectDetails = () => {
       scroll='paper'>
       <DialogTitle>{project?.name}</DialogTitle>
       <DialogContent>
-        <DialogContentText mb={2} variant='subtitle2'>
+        <DialogContentText
+          mb={2}
+          variant='caption'
+          sx={{ display: "block", color: "text.secondary" }}>
           <strong>Description</strong>: {project?.description}
         </DialogContentText>
         <DialogContentText
@@ -42,7 +47,7 @@ const ProjectDetails = () => {
           }}>
           Liste des tâches
         </DialogContentText>
-        <TodoList tasks={project?.tasks || []} projectId={project?.id} />
+        <TodoList tasks={projectTasks} projectId={projectId} />
       </DialogContent>
       <DialogActions>
         <Button

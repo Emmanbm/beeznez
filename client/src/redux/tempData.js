@@ -19,17 +19,46 @@ const tempData = createSlice({
         open: false,
         data: null,
       },
+      modalUser: {
+        open: false,
+        data: null,
+      },
+      modalInfo: {
+        open: true,
+        data: null,
+      },
     },
   },
   reducers: {
     toggleNotifications: (state) => {
       state.openNotifications = !state.openNotifications;
+      state.openSettings = false;
+      state.openUpdateUser = false;
     },
     toggleSettings: (state) => {
-      state.openSettings = !state.openSettings;
+      const open = state.openSettings;
+      if (open) {
+        state.openSettings = false;
+        state.openUpdateUser = false;
+      } else {
+        state.openSettings = true;
+      }
+      state.openNotifications = false;
     },
     toggleUpdateUser: (state) => {
       state.openUpdateUser = !state.openUpdateUser;
+    },
+    toggleAll: (state, action) => {
+      const newState = action.payload;
+      if (typeof newState === "boolean") {
+        state.openNotifications = newState;
+        state.openSettings = newState;
+        state.openUpdateUser = newState;
+      } else {
+        state.openNotifications = !state.openNotifications;
+        state.openSettings = !state.openSettings;
+        state.openUpdateUser = !state.openUpdateUser;
+      }
     },
     updateFormData: (state, action) => {
       state.formData = { ...state.formData, ...action.payload };
@@ -56,6 +85,7 @@ export const {
   toggleNotifications,
   toggleSettings,
   toggleUpdateUser,
+  toggleAll,
   updateCompanyData,
   updateUserData,
   updateFormData,

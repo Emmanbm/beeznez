@@ -1,52 +1,25 @@
-import {
-  IconButton,
-  ListItemIcon,
-  ListItemText,
-  Menu,
-  MenuItem,
-  Tooltip,
-} from "@mui/material";
-import MoreHorizOutlinedIcon from "@mui/icons-material/MoreHorizOutlined";
-import React, { useState } from "react";
-import { actions } from "./actions";
+import { IconButton, Tooltip } from "@mui/material";
+import SettingsIcon from "@mui/icons-material/Settings";
+import React from "react";
 import { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { openModal } from "../../../redux/tempData";
 
-const ActionsButtons = ({ row: data, ...otherProps }) => {
+const ActionsButtons = ({ row: data }) => {
   const users = useSelector((store) => store.user?.users || []);
   const user = useMemo(
     () => users.find((user) => user.id === data?.id) || {},
     [users, data?.id]
   );
-  const [anchorEl, setAnchorEl] = useState(null);
-  const handleClickMenu = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClickAction = (obj) => () => {
-    if (typeof obj?.action === "function") obj.action();
-    setAnchorEl(null);
-  };
   const dispatch = useDispatch();
 
   return (
-    <>
-      <Menu
-        anchorEl={anchorEl}
-        open={!!anchorEl}
-        onClose={() => setAnchorEl(null)}>
-        {actions(user, dispatch).map((act) => (
-          <MenuItem onClick={handleClickAction(act)} dense key={act.key}>
-            <ListItemIcon>{React.createElement(act.icon)}</ListItemIcon>
-            <ListItemText>{act.title}</ListItemText>
-          </MenuItem>
-        ))}
-      </Menu>
-      <Tooltip title='Cliquer pour voir les actions' arrow>
-        <IconButton onClick={handleClickMenu}>
-          <MoreHorizOutlinedIcon />
-        </IconButton>
-      </Tooltip>
-    </>
+    <Tooltip title='Cliquer pour voir les actions' arrow>
+      <IconButton
+        onClick={() => dispatch(openModal({ modal: "modalUser", data: user }))}>
+        <SettingsIcon />
+      </IconButton>
+    </Tooltip>
   );
 };
 

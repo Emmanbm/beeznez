@@ -16,11 +16,11 @@ export const columns = [
     headerAlign: "center",
     align: "center",
   },
-  // {
-  //   field: "action",
-  //   headerName: "Action",
-  //   headerAlign: "center",
-  //   align: "center",
-  //   renderCell: ActionsButtons,
-  // },
+  {
+    field: "action",
+    headerName: "Action",
+    headerAlign: "center",
+    align: "center",
+    renderCell: ActionsButtons,
+  },
 ];

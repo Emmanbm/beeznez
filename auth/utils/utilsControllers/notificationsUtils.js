@@ -2,9 +2,10 @@ const Notification = require("../../models/Notification");
 
 const createNotificationFunction = async (notificationData) => {
   try {
-    const { userId, title, message } = notificationData;
+    const { userId, title, message, type = "info" } = notificationData;
     const notification = new Notification({
       userId,
+      type,
       title: title || "Nouvelle tâche assignée",
       message:
         message ||

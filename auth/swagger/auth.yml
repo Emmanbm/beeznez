@@ -1,0 +1,36 @@
+---
+openapi: 3.0.0
+info:
+  title: BeeZnez - Auth API Documentation
+  version: 1.0.0
+  description: API pour l'authentification
+servers:
+  - url: http://localhost:3000/api/auth
+    description: Serveur Auth en développement
+paths:
+  "/login":
+    post:
+      summary: Connexion de l'utilisateur
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Adresse e-mail
+                password:
+                  type: string
+                  description: Mot de passe
+      responses:
+        "200":
+          description: Connexion réussie
+        "401":
+          description: Identifiants invalides
+tags:
+  - name: Auth
+    description: Routes liées à l'authentification

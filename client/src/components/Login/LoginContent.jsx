@@ -9,7 +9,7 @@ const LoginContent = ({ register, errors }) => {
         variant='filled'
         name='email'
         label='Email'
-        placeholder='example@beeznez.com'
+        placeholder='example@beeznez.fr'
         fullWidth
         required
         {...register("email", { required: true })}

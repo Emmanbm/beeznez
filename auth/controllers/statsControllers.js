@@ -7,14 +7,7 @@ const {
 const getStats = async (req, res) => {
   try {
     const { userId, role, companyId } = req.query;
-    // console.log(
-    //   "UserId: ",
-    //   userId,
-    //   "\tRole: ",
-    //   role,
-    //   "\tCompanyId: ",
-    //   companyId
-    // );
+    // console.log({ userId, role, companyId });
 
     if (role === "admin") {
       const stats = await getAdminStats(userId);

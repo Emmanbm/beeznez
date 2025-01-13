@@ -11,7 +11,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction='down' ref={ref} {...props} />;
 });
 
-export default function ModalError({ error, open, setOpen }) {
+export default function FormModalError({ error, open, setOpen }) {
   const errorMessages = React.useMemo(() => {
     const messages = [];
     const { error: errorMessage, errors } = error?.response?.data || {};

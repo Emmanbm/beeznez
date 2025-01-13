@@ -48,8 +48,6 @@ const TodoList = ({ tasks = [], projectId = null }) => {
     return {
       url: editingTask.id
         ? `/auth/task/${editingTask.id}` // Dans le cas de modification (PUT) d'une tâche, on la modifie directe
-        : projectId // Dans le cas de création (POST) d'une tâche, on vérifie d'abord si elle doit être liée à un projet ou non
-        ? `/auth/project/${projectId}/tasks`
         : "/auth/task",
       method: editingTask.id ? "PUT" : "POST",
     };
@@ -83,7 +81,7 @@ const TodoList = ({ tasks = [], projectId = null }) => {
       const response = await refresh({
         url,
         method,
-        data: { ...data },
+        data: { ...data, projectId },
       });
       const { task, project } = response.data;
       if (project) {

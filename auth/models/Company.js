@@ -13,6 +13,7 @@ const companySchema = new mongoose.Schema(
         "L'adresse email de l'entreprise n'est pas valide",
       ],
     },
+    isTheMainCompany: { type: Boolean, default: false }, // The main company c'est l'entreprise qui se charge de toute la gestion du site, en l'occurence: BeeZnez
     phone: { type: String }, // Numéro de téléphone
     website: { type: String }, // URL du site web
     industry: { type: String }, // Secteur d'activité (par exemple, Technologie, Santé)

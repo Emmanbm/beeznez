@@ -1,18 +1,28 @@
+const Project = require("../../models/Project");
 const Task = require("../../models/Task");
 const { createNotificationFunction } = require("./notificationsUtils");
 
 const createTaskFunction = async (taskData) => {
   try {
-    const { name, description, dueDate, priority, userId } = taskData;
+    const { name, description, dueDate, priority, userId, projectId } =
+      taskData;
     const task = new Task({
       name,
       description,
       dueDate,
       priority,
       userId,
+      projectId,
     });
     const savedTask = await task.save();
     await createNotificationFunction({ userId });
+    if (projectId) {
+      await Project.findByIdAndUpdate(
+        projectId,
+        { $push: { tasks: savedTask._id } },
+        { new: true }
+      );
+    }
     return savedTask;
   } catch (error) {
     console.error("Error while creating a task:", error);

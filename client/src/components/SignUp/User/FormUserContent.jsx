@@ -123,10 +123,22 @@ const FormUserContent = ({
             apiErrors={error?.response?.data?.errors}
             required
           />
+          {!registerUserAndCompany && (
+            <TextField
+              name='invitationCode'
+              label="Code d'invitation (facultatif)"
+              placeholder="Veuillez saisir le code d'invitation si vous en avez un"
+              register={register}
+              apiErrors={error?.response?.data?.errors}
+              formErrors={errors}
+            />
+          )}
+
           <PasswordField
+            id='password'
             displayStrength
             fullWidth
-            errors={errors}
+            formErrors={errors}
             apiErrors={error?.response?.data?.errors}
             required
             label='Mot de passe'
@@ -138,9 +150,9 @@ const FormUserContent = ({
                 required: "Le mot de passe est obligatoire",
                 pattern: {
                   value:
-                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/,
+                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!_@#$%^&*(),.?":{}|<>])[A-Za-z\d!_@#$%^&*(),.?":{}|<>]{8,}$/,
                   message:
-                    "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial",
+                    'Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial: [!_@#$%^&*(),.?":{}|<>]',
                 },
               }),
             }}
@@ -150,6 +162,7 @@ const FormUserContent = ({
             fullWidth
             required
             formErrors={errors}
+            apiErrors={error?.response?.data?.errors}
             label='Confirmer le mot de passe'
             variant='filled'
             placeholder='Confirmer le mot de passe'

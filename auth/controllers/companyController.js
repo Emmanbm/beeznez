@@ -2,14 +2,38 @@ const { default: mongoose } = require("mongoose");
 const Company = require("../models/Company");
 const User = require("../models/User");
 const getErrorMessages = require("../utils/getErrorMessages");
-const sendConfirmationEmail = require("../utils/sendConfirmationEmail");
+// const sendConfirmationEmail = require("../utils/sendConfirmationEmail");
 const {
   createCompanyFunction,
 } = require("../utils/utilsControllers/companiesUtils");
 const { createUserFunction } = require("../utils/utilsControllers/usersUtils");
 const { generateToken } = require("../utils/tokenUtils");
-
+const {
+  createNotificationFunction,
+} = require("../utils/utilsControllers/notificationsUtils");
 const MAX_AGE = 24 * 60 * 60 * 1000; // 24 heures
+
+const getCompany = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const company = await Company.findById(id);
+    if (!company)
+      return res.status(404).json({ message: "Société introuvable" });
+    res.status(200).json(company);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getCompanies = async (_, res) => {
+  try {
+    const companies = await Company.find();
+    res.status(200).json(companies);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 const registerCompany = async (req, res) => {
   try {
     const { name, email, phone, address, website, userId } = req.body;
@@ -134,22 +158,51 @@ const registerCompanyAndManager = async (req, res) => {
   }
 };
 
-const getCompany = async (req, res) => {
+const joinCompanyByInvitation = async (req, res) => {
   try {
-    const { id } = req.params;
-    const company = await Company.findById(id);
-    if (!company)
-      return res.status(404).json({ message: "Société introuvable" });
-    res.status(200).json(company);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+    const { invitationCode, userId } = req.body;
 
-const getCompanies = async (_, res) => {
-  try {
-    const companies = await Company.find();
-    res.status(200).json(companies);
+    const company = await Company.findOne({ invitationCode }).populate({
+      path: "employees", // Le champ référencé dans la collection `Company`
+      match: { role: "manager" }, // Ne récupérer que les utilisateurs dont le rôle est 'manager'
+    });
+    if (!company) {
+      return res.status(400).json({ error: "Code d'invitation invalide." });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res
+        .status(400)
+        .json({ error: "Vous devez d'abord créer un compte" });
+    }
+    const managers = company.employees;
+    await Promise.all(
+      managers.map((manager) =>
+        createNotificationFunction({
+          userId: manager._id,
+          title: "Nouvel utilisateur",
+          message:
+            "Un nouvel utilisateur a rejoint votre entreprise, vous pouvez consulter la liste des employés pour en savoir plus.",
+        })
+      )
+    );
+
+    company.employees.addToSet(userId);
+    await company.save();
+
+    await User.findOneAndUpdate(
+      { _id: userId },
+      {
+        companyId: company._id,
+        role: company.isTheMainCompany ? "admin" : "employee",
+      },
+      { new: true }
+    );
+
+    res
+      .status(200)
+      .json({ message: "Cet utilisateur a bien été ajouté à l'entreprise" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -158,8 +211,10 @@ const getCompanies = async (_, res) => {
 const deleteCompany = async (req, res) => {
   try {
     const { id } = req.params;
-    await Company.findByIdAndDelete(id);
-    res.status(200).json({ message: "Société supprimée" });
+    const company = await Company.findByIdAndDelete(id);
+    if (!company)
+      return res.status(404).json({ message: "Entreprise non trouvée" });
+    res.status(200).json({ message: "Entreprise supprimée" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -172,4 +227,5 @@ module.exports = {
   registerCompanyAndManager,
   registerCompany,
   registerCompanyManager,
+  joinCompanyByInvitation,
 };

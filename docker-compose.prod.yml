@@ -1,9 +1,7 @@
-version: "3.8"
-
 services:
   api-gateway:
     build:
-      context: ./gateway
+      context: ./api-gateway
       dockerfile: Dockerfile
       target: prod
     container_name: api-gateway
@@ -12,7 +10,7 @@ services:
     depends_on:
       - auth
     env_file:
-      - ./gateway/.env
+      - ./api-gateway/.env
     restart: unless-stopped
 
   auth:

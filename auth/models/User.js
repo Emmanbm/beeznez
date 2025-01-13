@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Le mot de passe est obligatoire"],
       match: [
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/,
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!_@#$%^&*(),.?":{}|<>])[A-Za-z\d!_@#$%^&*(),.?":{}|<>]{8,}$/,
         "Le mot de passe doit contenir au moins 8 caractères, une lettre majuscule, une lettre minuscule, un chiffre, et un caractère spécial",
       ],
     },
@@ -53,7 +53,11 @@ userSchema.plugin(uniqueValidator, {
 
 userSchema.pre("save", async function (next) {
   try {
-    if (!this.isModified("password") || !this.password) {
+    if (
+      !this.isModified("password") ||
+      !this.password ||
+      this.password.startsWith("$2b$")
+    ) {
       return next();
     }
     const hashedPassword = await hashPassword(this.password);
@@ -63,6 +67,29 @@ userSchema.pre("save", async function (next) {
   } catch (err) {
     next(err);
   }
+});
+
+// Middleware pour valider et hasher le mot de passe lors de "findOneAndUpdate"
+userSchema.pre("findOneAndUpdate", async function (next) {
+  const update = this.getUpdate();
+
+  if (update.password) {
+    // Validation explicite
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!_@#$%^&*(),.?":{}|<>])[A-Za-z\d!_@#$%^&*(),.?":{}|<>]{8,}$/;
+    if (!passwordRegex.test(update.password)) {
+      return next(
+        new Error(
+          "Le mot de passe doit contenir au moins 8 caractères, une lettre majuscule, une lettre minuscule, un chiffre, et un caractère spécial"
+        )
+      );
+    }
+
+    // Hachage du mot de passe
+    update.password = await hashPassword(update.password);
+  }
+
+  next();
 });
 
 userSchema.set("toJSON", {

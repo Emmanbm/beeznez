@@ -6,12 +6,12 @@ import {
   GridToolbarDensitySelector,
 } from "@mui/x-data-grid";
 import { useLocation } from "react-router-dom";
-import AddTaskButton from "./Tasks/AddTaskButton";
+import InviteUser from "./Users/InviteUser";
 
 const CustomToolbar = () => {
   const { pathname } = useLocation();
   return (
-    <GridToolbarContainer>
+    <GridToolbarContainer sx={{ display: "flex", alignItems: "center", mb: 1 }}>
       <GridToolbarColumnsButton
         slotProps={{
           tooltip: { title: "Selectionner des colonnes" },
@@ -30,7 +30,7 @@ const CustomToolbar = () => {
           tooltip: { title: "Exporter" },
         }}
       />
-      {pathname === "/auth/tasks" && <AddTaskButton />}
+      {["/auth/employees", "/auth/users"].includes(pathname) && <InviteUser />}
     </GridToolbarContainer>
   );
 };

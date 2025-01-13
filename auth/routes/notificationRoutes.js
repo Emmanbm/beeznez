@@ -4,12 +4,15 @@ const {
   createNotification,
   markAsRead,
   deleteNotification,
+  createNotificationForAdmin,
 } = require("../controllers/notificationControllers");
+const verifyToken = require("../middlewares/verifyToken");
 const router = express.Router();
 
-router.get("/notifications", getNotifications);
-router.post("/notifications", createNotification);
-router.put("/notifications/:id", markAsRead);
-router.delete("/notifications/:id", deleteNotification);
+router.post("/notifications/admin", createNotificationForAdmin);
+router.get("/notifications", verifyToken, getNotifications);
+router.post("/notifications", verifyToken, createNotification);
+router.put("/notifications/:id", verifyToken, markAsRead);
+router.delete("/notifications/:id", verifyToken, deleteNotification);
 
 module.exports = router;
