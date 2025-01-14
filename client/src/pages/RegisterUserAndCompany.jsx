@@ -67,7 +67,7 @@ const RegisterUserAndCompany = () => {
       gap={2}
       alignItems='center'
       justifyContent={activeStep !== steps.length ? "space-between" : "center"}>
-      <ModalError open={openModal} setOpen={setOpenModal} error={error} />
+      {/* <ModalError open={openModal} setOpen={setOpenModal} error={error} /> */}
       <Stepper activeStep={activeStep} alternativeLabel sx={{ width: "100%" }}>
         {steps.map((label) => (
           <Step key={label}>
